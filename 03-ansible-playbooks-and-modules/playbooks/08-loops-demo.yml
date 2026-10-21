@@ -1,0 +1,57 @@
+---
+- name: Demonstrate loops
+  hosts: all
+  become: true
+  gather_facts: false
+
+  vars:
+    demo_users:
+      - name: deploy
+        groups: sudo
+      - name: monitor
+        groups: users
+      - name: appuser
+        groups: users
+
+    app_directories:
+      - /opt/app/logs
+      - /opt/app/config
+      - /opt/app/data
+      - /opt/app/tmp
+
+    utility_packages:
+      - git
+      - curl
+      - unzip
+      - jq
+
+  tasks:
+    - name: Create demo users
+      user:
+        name: "{{ item.name }}"
+        groups: "{{ item.groups }}"
+        append: true
+        state: present
+        create_home: true
+      loop: "{{ demo_users }}"
+
+    - name: Create application directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      loop: "{{ app_directories }}"
+
+    - name: Install utility packages
+      apt:
+        name: "{{ utility_packages }}"
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Display each demo username
+      debug:
+        msg: "Created or verified user: {{ item.name }}"
+      loop: "{{ demo_users }}"
