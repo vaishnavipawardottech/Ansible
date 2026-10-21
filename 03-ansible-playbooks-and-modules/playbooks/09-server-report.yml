@@ -1,0 +1,72 @@
+---
+- name: Generate a server health report
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Check root filesystem disk usage
+      command: df -hP /
+      register: disk_result
+      changed_when: false
+
+    - name: Check memory usage
+      command: free -m
+      register: memory_result
+      changed_when: false
+
+    - name: Get running services
+      shell: |
+        systemctl list-units \
+          --type=service \
+          --state=running \
+          --no-legend | head -n 10
+      register: services_result
+      changed_when: false
+      failed_when: false
+
+    - name: Display server report
+      debug:
+        msg:
+          - "Report time: {{ ansible_date_time.iso8601 }}"
+          - "Host: {{ inventory_hostname }}"
+          - "OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "IP: {{ ansible_default_ipv4.address | default('Not available') }}"
+          - "RAM: {{ ansible_memtotal_mb }} MB"
+          - "Disk information: {{ disk_result.stdout_lines[-1] }}"
+          - "Running service lines collected: {{ services_result.stdout_lines | default([]) | length }}"
+
+    - name: Warn if root filesystem usage is at least 90 percent
+      debug:
+        msg: "WARNING: root filesystem usage is at least 90 percent"
+      when: >-
+        disk_result.stdout
+        | regex_search(' (9[0-9]|100)% ')
+
+    - name: Save report on the managed host
+      copy:
+        dest: "/tmp/server-report-{{ inventory_hostname }}.txt"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          SERVER HEALTH REPORT
+          ===================
+          Generated: {{ ansible_date_time.iso8601 }}
+          Inventory hostname: {{ inventory_hostname }}
+          System hostname: {{ ansible_hostname }}
+          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          Default IP: {{ ansible_default_ipv4.address | default('Not available') }}
+          Total RAM: {{ ansible_memtotal_mb }} MB
+
+          DISK USAGE
+          ----------
+          {{ disk_result.stdout }}
+
+          MEMORY
+          ------
+          {{ memory_result.stdout }}
+
+          RUNNING SERVICES (UP TO 10)
+          --------------------------
+          {{ services_result.stdout | default('Service listing unavailable') }}
