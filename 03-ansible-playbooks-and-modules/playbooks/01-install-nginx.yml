@@ -1,0 +1,38 @@
+---
+- name: Install and start Nginx on web servers
+  hosts: web
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Ensure Nginx is enabled and running
+      service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Create a custom homepage
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head><title>Ansible playbooks</title></head>
+          <body>
+            <h1>Nginx managed by Ansible</h1>
+            <p>Ansible Playbooks and Modules</p>
+          </body>
+          </html>
+        owner: root
+        group: root
+        mode: "0644"
