@@ -1,0 +1,46 @@
+# required variables from: group_vars and host_vars file
+
+---
+- name: Configure common settings
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Install common packages
+      apt:
+        name: "{{ common_packages }}"
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Display common environment
+      debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Environment: {{ app_env }}"
+          - "NTP server: {{ ntp_server }}"
+
+- name: Display web server settings
+  hosts: web
+  gather_facts: false
+
+  tasks:
+    - name: Display web configuration
+      debug:
+        msg:
+          - "Web package: {{ web_package }}"
+          - "Web port: {{ web_port }}"
+          - "Max connections: {{ max_connections }}"
+          - "Custom message: {{ custom_message }}"
+
+- name: Display database demo settings
+  hosts: db
+  gather_facts: false
+
+  tasks:
+    - name: Display database configuration
+      debug:
+        msg:
+          - "Database package variable: {{ db_package }}"
+          - "Database port: {{ db_port }}"
