@@ -1,0 +1,9 @@
+# shell -> Run a command with shell features (pipes, redirects)
+
+- name: Count running processes
+  shell: ps aux | wc -l
+  register: process_count
+
+- name: Show process count
+  debug:
+    msg: "Total processes: {{ process_count.stdout }}"
