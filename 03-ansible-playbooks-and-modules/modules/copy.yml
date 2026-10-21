@@ -1,0 +1,9 @@
+# copy -> Copy files from control node to managed nodes
+
+- name: Copy config file
+  copy:
+    src: files/app.conf
+    dest: /etc/app.conf
+    owner: root
+    group: root
+    mode: '0644'

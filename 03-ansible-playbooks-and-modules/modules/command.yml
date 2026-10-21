@@ -1,0 +1,9 @@
+# command -> Run a command (no shell features)
+
+- name: Check disk space
+  command: df -h
+  register: disk_output
+
+- name: Print disk space
+  debug:
+    var: disk_output.stdout_lines

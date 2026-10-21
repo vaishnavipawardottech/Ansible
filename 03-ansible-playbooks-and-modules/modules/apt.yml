@@ -1,0 +1,10 @@
+# apt -> Install and remove packages
+
+- name: Install multiple packages
+  apt:
+    name:
+      - git
+      - curl
+      - wget
+      - tree
+    state: present
