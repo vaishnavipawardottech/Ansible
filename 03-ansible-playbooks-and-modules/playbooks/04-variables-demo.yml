@@ -1,0 +1,37 @@
+---
+- name: Demonstrate Ansible variables
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    app_name: ansible-demo-app
+    app_port: 8080
+    app_dir: "/opt/{{ app_name }}"
+    required_packages:
+      - git
+      - curl
+      - unzip
+
+  tasks:
+    - name: Display application variables
+      debug:
+        msg:
+          - "Application: {{ app_name }}"
+          - "Port: {{ app_port }}"
+          - "Directory: {{ app_dir }}"
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Install required packages
+      apt:
+        name: "{{ required_packages }}"
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
