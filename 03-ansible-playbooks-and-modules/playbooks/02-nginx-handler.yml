@@ -1,0 +1,49 @@
+# Handlers are tasks that run only when triggered by a notify. This avoids unnecessary service restarts.
+
+---
+- name: Configure Nginx with a handler
+  hosts: web
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Add a custom Nginx server on port 8081
+      copy:
+        dest: /etc/nginx/conf.d/ansible-demo.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          server {
+              listen 8081;
+              server_name _;
+              location / {
+                  return 200 "Nginx configured by Ansible Day 69\n";
+                  add_header Content-Type text/plain;
+              }
+          }
+      notify: Validate and restart Nginx
+
+    - name: Ensure Nginx is enabled and running
+      service:
+        name: nginx
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Validate and restart Nginx
+      block:
+        - name: Test Nginx configuration
+          command: nginx -t
+          changed_when: false
+
+        - name: Restart Nginx
+          service:
+            name: nginx
+            state: restarted
