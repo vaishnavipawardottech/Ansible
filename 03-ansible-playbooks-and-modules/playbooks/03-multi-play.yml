@@ -1,0 +1,45 @@
+---
+- name: Configure web servers
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure Nginx is installed
+      apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Ensure Nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: true
+
+- name: Prepare application servers
+  hosts: app
+  become: true
+  tasks:
+    - name: Install application utilities
+      apt:
+        name:
+          - curl
+          - git
+          - unzip
+        state: present
+        update_cache: true
+
+    - name: Create application directory
+      file:
+        path: /opt/demo-app
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+- name: Prepare database demo servers
+  hosts: db
+  become: true
+  tasks:
+    - name: Print database demo target
+      debug:
+        msg: "Database demo group target: {{ inventory_hostname }}"
