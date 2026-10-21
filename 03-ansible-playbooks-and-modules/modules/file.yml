@@ -1,0 +1,8 @@
+# file -> Create directories and manage permissions
+
+- name: Create application directory
+  file:
+    path: /opt/myapp
+    state: directory
+    owner: ec2-user
+    mode: '0755'

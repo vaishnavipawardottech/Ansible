@@ -1,0 +1,7 @@
+# lineinfile -> Add or modify a single line in a file
+
+- name: Set timezone in environment
+  lineinfile:
+    path: /etc/environment
+    line: 'TZ=Asia/Kolkata'
+    create: true
