@@ -1,0 +1,7 @@
+---
+ntp_server: time.google.com
+app_env: development
+
+common_packages:
+  - curl
+  - git
