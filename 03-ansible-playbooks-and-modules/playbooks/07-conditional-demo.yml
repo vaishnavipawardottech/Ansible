@@ -1,0 +1,53 @@
+---
+- name: Demonstrate Ansible conditionals
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    app_env: development
+
+  tasks:
+    - name: Run only on web group members
+      debug:
+        msg: "This host belongs to the web group"
+      when: "'web' in group_names"
+
+    - name: Run only on database group members
+      debug:
+        msg: "This host belongs to the db group"
+      when: "'db' in group_names"
+
+    - name: Warn if memory is below 1 GB
+      debug:
+        msg: "Warning: this host has less than 1 GB of RAM"
+      when: ansible_memtotal_mb < 1024
+
+    - name: Detect Amazon Linux
+      debug:
+        msg: "Amazon Linux detected"
+      when: ansible_distribution == "Amazon"
+
+    - name: Detect Ubuntu
+      debug:
+        msg: "Ubuntu detected"
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Run only in production
+      debug:
+        msg: "Production-only task"
+      when: app_env == "production"
+
+    - name: Require both conditions
+      debug:
+        msg: "Ubuntu host with at least 1 GB RAM"
+      when:
+        - ansible_distribution == "Ubuntu"
+        - ansible_memtotal_mb >= 1024
+
+    - name: Run if either condition is true
+      debug:
+        msg: "Ubuntu or Amazon Linux detected"
+      when: >-
+        ansible_distribution == "Ubuntu"
+        or ansible_distribution == "Amazon"
